@@ -3,13 +3,43 @@ package MD5;
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class Md5Hacker {
 
     private Md5Hacker () {
 
-        getPassword("7DE70DBD65AC26EE49505A94F32DD0DD",5);
-        System.out.println(getHash("p1/!"));
+        UI();
+
+    }
+
+    private void UI() {
+
+        Scanner scan = new Scanner(System.in);
+        String input = "";
+        while (!input.equalsIgnoreCase("done")) {
+
+            System.out.print("Hash or Crack or Done: ");
+            input = scan.nextLine();
+
+            if (input.equalsIgnoreCase("Hash")) {
+
+                System.out.print("Hash: ");
+                String hash = scan.nextLine();
+                System.out.println(getHash(hash));
+
+            } else if (input.equalsIgnoreCase("Crack")) {
+
+                System.out.print("Hash: ");
+                String hash = scan.nextLine();
+                System.out.print("Max length: ");
+                String max = scan.nextLine();
+                getPassword(hash, Integer.parseInt(max));
+
+            }
+
+        }
 
     }
 
@@ -32,66 +62,87 @@ public class Md5Hacker {
     private void getPassword(String hash, int max) {
 
         String pass = " ";
-        System.out.println("At length 1");
-        while (pass.length() < max) {
+        while (pass.length() <= max) {
 
             char[] characters = pass.toCharArray();
-            for (int i = 32; i <= 126; i++) {
 
-                characters[characters.length - 1] = (char) i;
-                if (getHash(String.copyValueOf(characters)).equals(hash)) {
+            if (updateLast(characters, hash)) {
 
-                    System.out.println("Password is " + String.copyValueOf(characters));
-                    return;
-
-                }
+                return;
 
             }
 
-            int tildaCount = 0;
-            boolean newSet = false;
-            for (char chara : characters) {
+            int old = characters.length;
+            characters = makeNew(characters);
 
-                if (chara == '~') {
+            if (old == characters.length) {
 
-                    tildaCount++;
-
-                }
-
-            }
-
-            if (tildaCount == characters.length) {
-
-                characters = new char[characters.length + 1];
-                for (int i = 0; i < characters.length; i++) {
-
-                    characters[i] = ' ';
-
-                }
-                System.out.println("At length " + characters.length);
-                newSet = true;
-
-            }
-
-            if (!newSet) {
-
-                int index = characters.length - 2;
-                while (index >= 0 && characters[index] == '~') {
-
-                    characters[index] = ' ';
-                    index--;
-
-                }
-
-                if (index >= 0) {
-
-                    characters[index] = (char) (characters[index] + 1);
-
-                }
+                updateWhenDone(characters);
 
             }
 
             pass = String.copyValueOf(characters);
+
+        }
+
+    }
+
+    private boolean updateLast(char[] characters, String hash) {
+
+        for (int i = 32; i <= 126; i++) {
+
+            characters[characters.length - 1] = (char) i;
+            if (getHash(String.copyValueOf(characters)).equals(hash)) {
+
+                System.out.println("Password is " + String.copyValueOf(characters));
+                return true;
+
+            }
+
+        }
+
+        return false;
+
+    }
+
+    private char[] makeNew(char[] characters) {
+
+        int tildaCount = 0;
+        for (char chara : characters) {
+
+            if (chara == '~') {
+
+                tildaCount++;
+
+            }
+
+        }
+
+        if (tildaCount == characters.length) {
+
+            characters = new char[characters.length + 1];
+            Arrays.fill(characters, ' ');
+            return characters;
+
+        }
+
+        return characters;
+
+    }
+
+    private void updateWhenDone(char[] characters) {
+
+        int index = characters.length - 1;
+        while (index >= 0 && characters[index] == '~') {
+
+            characters[index] = ' ';
+            index--;
+
+        }
+
+        if (index >= 0) {
+
+            characters[index] = (char) (characters[index] + 1);
 
         }
 
